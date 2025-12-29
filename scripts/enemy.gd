@@ -1,32 +1,28 @@
 ```gdscript
 extends CharacterBody3D
 
-@export var speed: float = 4.0
-@export var detection_range: float = 10.0
-@export var attack_range: float = 2.0
-@onready var player = get_parent().get_node("Player")
+var target : Node = null
+var speed : float = 5.0
+var chase_range : float = 10.0
 
-var is_chasing: bool = false
+func _ready() -> void:
+    target = get_parent().get_node("Player")
 
 func _process(delta: float) -> void:
-    if is_chasing:
-        chase_player(delta)
-    else:
-        detect_player()
-
-func detect_player() -> void:
-    var distance_to_player = global_transform.origin.distance_to(player.global_transform.origin)
-    if distance_to_player <= detection_range:
-        is_chasing = true
+    if target:
+        var distance = global_transform.origin.distance_to(target.global_transform.origin)
+        if distance <= chase_range:
+            chase_player(delta)
 
 func chase_player(delta: float) -> void:
-    var direction = (player.global_transform.origin - global_transform.origin).normalized()
-    if global_transform.origin.distance_to(player.global_transform.origin) > attack_range:
-        move_and_slide(direction * speed)
-    else:
-        attack_player()
+    var direction = (target.global_transform.origin - global_transform.origin).normalized()
+    move_and_slide(direction * speed)
 
-func attack_player() -> void:
-    # 공격 로직을 여기에 추가
-    print("공격!")
+func _on_Area3D_body_entered(body: Node) -> void:
+    if body.name == "Player":
+        target = body
+
+func _on_Area3D_body_exited(body: Node) -> void:
+    if body == target:
+        target = null
 ```
