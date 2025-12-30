@@ -1,32 +1,30 @@
 ```gdscript
 extends CharacterBody3D
 
-@export var speed: float = 3.0
-@export var detection_range: float = 10.0
-@export var attack_range: float = 2.0
-@onready var player = get_parent().get_node("Player")
+@export var speed : float = 5.0
+@export var detection_radius : float = 10.0
+@export var attack_radius : float = 2.0
 
-var is_chasing: bool = false
+var target : Node = null
 
 func _process(delta: float) -> void:
-    var distance_to_player = global_position.distance_to(player.global_position)
-
-    if distance_to_player < detection_range:
-        is_chasing = true
-    else:
-        is_chasing = false
-
-    if is_chasing:
-        chase_player(delta)
-
-func chase_player(delta: float) -> void:
-    var direction = (player.global_position - global_position).normalized()
+    if target == null:
+        target = get_tree().get_root().get_child(0)  # 타겟 노드를 설정하세요 (여기서는 첫 번째 자식으로 설정)
+        
+    var distance_to_target = global_position.distance_to(target.global_position)
+    
+    if distance_to_target < detection_radius:
+        look_at(target.global_position, Vector3.UP)
+        
+        if distance_to_target > attack_radius:
+            move_toward_target(delta)
+        else:
+            attack()
+            
+func move_toward_target(delta: float) -> void:
+    var direction = (target.global_position - global_position).normalized()
     move_and_slide(direction * speed)
 
-    if global_position.distance_to(player.global_position) < attack_range:
-        attack_player()
-
-func attack_player() -> void:
-    # 공격 로직 추가
-    print("Attack the player!")
+func attack() -> void:
+    print("Attack!")
 ```
