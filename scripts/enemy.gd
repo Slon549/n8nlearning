@@ -1,31 +1,33 @@
 ```gdscript
-extends CharacterBody2D
+extends CharacterBody3D
 
-@export var speed: float = 100.0
-@export var detection_range: float = 200.0
-@export var attack_range: float = 50.0
+@export var speed: float = 5.0
+@export var detection_radius: float = 10.0
+@export var attack_radius: float = 2.0
+@export var player: Node3D
 
-var player: Node2D
+var target: Node3D = null
 
-func _ready() -> void:
-    player = get_parent().get_node("Player")
+func _ready():
+    pass
 
 func _process(delta: float) -> void:
-    if player:
-        var distance_to_player = position.distance_to(player.position)
-        
-        if distance_to_player < detection_range:
-            if distance_to_player > attack_range:
-                move_towards_player(delta)
-            else:
-                attack_player()
+    if target == null:
+        detect_player()
+    else:
+        chase_player(delta)
 
-func move_towards_player(delta: float) -> void:
-    var direction = (player.position - position).normalized()
-    velocity = direction * speed
-    move_and_slide(velocity)
+func detect_player() -> void:
+    if player.global_transform.origin.distance_to(global_transform.origin) <= detection_radius:
+        target = player
+
+func chase_player(delta: float) -> void:
+    var direction = (target.global_transform.origin - global_transform.origin).normalized()
+    if direction.length() > attack_radius:
+        move_and_slide(direction * speed)
+    else:
+        attack_player()
 
 func attack_player() -> void:
-    # 공격 로직을 여기에 추가하세요.
-    print("Attacking Player!")
+    print("Attacking player!")
 ```
