@@ -3,16 +3,26 @@ extends Node2D
 
 @export var speed: float = 200.0
 @export var detection_range: float = 300.0
-@onready var player = get_parent().get_node("Player")
+@export var attack_range: float = 50.0
 
-func _process(delta: float) -> void:
-    if is_player_in_range():
-        move_towards_player(delta)
+var player: Node2D
 
-func is_player_in_range() -> bool:
-    return position.distance_to(player.position) <= detection_range
+func _ready():
+    player = get_parent().get_node("Player")
 
-func move_towards_player(delta: float) -> void:
-    var direction = (player.position - position).normalized()
-    position += direction * speed * delta
+func _process(delta: float):
+    if player:
+        var distance = global_position.distance_to(player.global_position)
+        if distance < detection_range:
+            if distance > attack_range:
+                move_towards_player(delta)
+            else:
+                attack_player()
+
+func move_towards_player(delta: float):
+    var direction = (player.global_position - global_position).normalized()
+    global_position += direction * speed * delta
+
+func attack_player():
+    print("Attacking the player!")
 ```
