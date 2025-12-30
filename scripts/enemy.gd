@@ -1,28 +1,29 @@
 ```gdscript
-extends Node2D
+extends CharacterBody3D
 
-@export var speed: float = 200.0
-@export var detection_range: float = 300.0
-@export var attack_range: float = 50.0
+@export var speed: float = 5.0
+@export var detection_range: float = 10.0
+@export var attack_range: float = 1.5
+@onready var player = $Player
 
-var player: Node2D
+var is_player_detected: bool = false
 
-func _ready():
-    player = get_parent().get_node("Player")
+func _process(delta: float) -> void:
+    var distance_to_player = global_position.distance_to(player.global_position)
+    
+    if distance_to_player <= detection_range:
+        is_player_detected = true
+        look_at(player.global_position, Vector3.UP)
+        move_towards_player(delta)
+    else:
+        is_player_detected = false
 
-func _process(delta: float):
-    if player:
-        var distance = global_position.distance_to(player.global_position)
-        if distance < detection_range:
-            if distance > attack_range:
-                move_towards_player(delta)
-            else:
-                attack_player()
+func move_towards_player(delta: float) -> void:
+    if global_position.distance_to(player.global_position) > attack_range:
+        var direction = (player.global_position - global_position).normalized()
+        move_and_slide(direction * speed)
 
-func move_towards_player(delta: float):
-    var direction = (player.global_position - global_position).normalized()
-    global_position += direction * speed * delta
-
-func attack_player():
-    print("Attacking the player!")
+func _on_attack_area_body_entered(body: Node) -> void:
+    if body.is_in_group("players"):
+        body.take_damage(1)  # 해당하는 데미지 처리
 ```
